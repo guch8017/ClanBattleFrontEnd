@@ -2,7 +2,9 @@ import AppHeader from "./Appbar";
 import React from "react";
 import {withRouter} from "react-router"
 import DamageGraph from "./DamageGraph";
-import {Grid, Paper, Typography, withStyles, Snackbar} from "@material-ui/core";
+import {Grid, Paper, Typography, withStyles, Snackbar, Table, TableCell, TableBody} from "@material-ui/core";
+import TableRow from '@material-ui/core/TableRow';
+import TableContainer from '@material-ui/core/TableContainer';
 import MuiAlert from '@material-ui/lab/Alert';
 import CssBaseline from "@material-ui/core/CssBaseline";
 import {detailAPI} from "./Constant";
@@ -24,7 +26,7 @@ const styles = theme => ({
         flexGrow: 1,
     },
     paperLayout: {
-        padding: theme.spacing(3),
+        padding: theme.spacing(2),
         margin: theme.spacing(2),
     },
     childGrid: {
@@ -38,9 +40,16 @@ const styles = theme => ({
     loadingState: {
         opacity: 0.5
     },
+    htmlWrap: {
+        height: '100%',
+        boxSizing: 'border-box',
+        overflow: 'auto'
+      }
 });
 
 class ClanDetail extends React.Component {
+    paperRef = React.createRef();
+
     constructor(props) {
         super(props);
         if (!props.location.state) {
@@ -60,11 +69,21 @@ class ClanDetail extends React.Component {
             errorOpen: false,
             errorMsg: "",
             historyRank: [],
-            historyDmg: []
+            historyDmg: [],
+            chartWidth: 0,
+            chartHeight: 0,
         }
         this.handleFinishLoading = this.handleFinishLoading.bind(this);
         this.handleSuccessClose = this.handleSuccessClose.bind(this);
         this.handleFailClose = this.handleFailClose.bind(this);
+
+        window.addEventListener('resize', (ev) => {
+            // 更新表格大小
+            this.setState({
+                chartWidth: (this.paperRef.current == null)? 0 : this.paperRef.current.clientWidth,
+                chartHeight: (this.paperRef.current == null)? 0 : this.paperRef.current.clientHeight,
+            })
+        })
     }
 
     handleFinishLoading() {
@@ -80,6 +99,12 @@ class ClanDetail extends React.Component {
     }
 
     componentDidMount() {
+        // 更新表格大小
+        this.setState({
+            chartWidth: (this.paperRef.current == null)? 0 : this.paperRef.current.clientWidth,
+            chartHeight: (this.paperRef.current == null)? 0 : this.paperRef.current.clientHeight,
+        })
+
         const _this = this;
         _this.setState({loading: true});
         Axios.post(
@@ -143,6 +168,16 @@ class ClanDetail extends React.Component {
 
     render() {
         const {classes} = this.props;
+
+        const clanDatas = [
+            ['伤害', this.state.clanScore],
+            ['排名', this.state.rank],
+            ['会长', this.state.clanLeader],
+            ['会长ID', this.leaderID],
+            ['进度', this.state.progress],
+        ]
+
+
         return (
             <React.Fragment>
                 <CssBaseline/>
@@ -157,86 +192,52 @@ class ClanDetail extends React.Component {
                                 alignItems="center"
                                 justify="center"
                             >
-                                <Grid item xs={4}>
-                                    <Paper className={classes.paperLayout}>
-                                        <Typography gutterBottom variant="h5" component="h2" align={"left"}>
-                                            {this.state.clanName}
-                                        </Typography>
-                                        <Grid container className={classes.childGrid2}>
-                                            <Grid item xs={6}>
-                                                <Typography variant="h6" color="textSecondary" component="p"
-                                                            align={"left"}>
-                                                    伤害
-                                                </Typography>
-                                            </Grid>
-                                            <Grid item>
-                                                <Typography variant="h6" color="textSecondary" component="p">
-                                                    {this.state.clanScore}
-                                                </Typography>
-                                            </Grid>
-                                        </Grid>
-                                        <Grid container className={classes.childGrid}>
-                                            <Grid item xs={6}>
-                                                <Typography variant="h6" color="textSecondary" component="p"
-                                                            align={"left"}>
-                                                    排名
-                                                </Typography>
-                                            </Grid>
-                                            <Grid item>
-                                                <Typography variant="h6" color="textSecondary" component="p">
-                                                    {this.state.rank}
-                                                </Typography>
-                                            </Grid>
-                                        </Grid>
-                                        <Grid container className={classes.childGrid}>
-                                            <Grid item xs={6}>
-                                                <Typography variant="h6" color="textSecondary" component="p"
-                                                            align={"left"}>
-                                                    会长
-                                                </Typography>
-                                            </Grid>
-                                            <Grid item>
-                                                <Typography variant="h6" color="textSecondary" component="p">
-                                                    {this.state.clanLeader}
-                                                </Typography>
-                                            </Grid>
-                                        </Grid>
-                                        <Grid container className={classes.childGrid}>
-                                            <Grid item xs={6}>
-                                                <Typography variant="h6" color="textSecondary" component="p"
-                                                            align={"left"}>
-                                                    会长ID
-                                                </Typography>
-                                            </Grid>
-                                            <Grid item>
-                                                <Typography variant="h6" color="textSecondary" component="p">
-                                                    {this.leaderID}
-                                                </Typography>
-                                            </Grid>
-                                        </Grid>
-                                        <Grid container className={classes.childGrid}>
-                                            <Grid item xs={6}>
-                                                <Typography variant="h6" color="textSecondary" component="p"
-                                                            align={"left"}>
-                                                    进度
-                                                </Typography>
-                                            </Grid>
-                                            <Grid item>
-                                                <Typography variant="h6" color="textSecondary" component="p">
-                                                    {this.state.progress}
-                                                </Typography>
-                                            </Grid>
-                                        </Grid>
-                                    </Paper>
+                                {/* 左侧数据 */}
+                                <Grid item xs={12} md={4}>
+                                    <TableContainer>
+                                        <Paper className={classes.paperLayout}>
+                                            <Typography gutterBottom variant="h5" component="h2" align={"center"}>
+                                                {this.state.clanName}
+                                            </Typography>
+                                            <Table>
+                                                <TableBody>
+                                                    {/* 格式化左侧数据 */}
+                                                    {clanDatas.map((value, index, array) => {
+                                                        return (
+                                                            <TableRow>
+                                                                <TableCell>
+                                                                    <Typography variant="h6" color="textPrimary" component="p">
+                                                                        {value[0]}
+                                                                    </Typography>
+                                                                </TableCell>
+                                                                <TableCell>
+                                                                    <Typography variant="h6" color="textSecondary" component="p">
+                                                                        {value[1]}
+                                                                    </Typography>
+                                                                </TableCell>
+                                                            </TableRow>
+                                                        )
+                                                    })}
+                                                </TableBody>
+                                            </Table>
+                                        </Paper>
+                                    </TableContainer>
                                 </Grid>
-                                <Grid item xs>
+                                {/* 图表 */}
+                                <Grid item xs={12} md={8}>
                                     <Paper
                                         marginLeft="20"
                                         className={classes.paperLayout}
                                         justify={"center"}
+                                        ref={this.paperRef}
                                     >
-                                        <div className={(this.state.loading) ? classes.loadingState : ""}>
-                                            <DamageGraph  d={this.state.historyDmg} r={this.state.historyRank}/>
+                                        <div className={classes.htmlWrap}>
+                                            <DamageGraph  
+                                            d={this.state.historyDmg} 
+                                            r={this.state.historyRank}
+                                            width={Math.max(this.state.chartWidth, 600)}
+                                            height={400}
+                                            />
                                         </div>
                                     </Paper>
                                 </Grid>
@@ -244,12 +245,16 @@ class ClanDetail extends React.Component {
                         </Grid>
                     </div>
                 </div>
-                <Snackbar open={this.state.successOpen} autoHideDuration={6000} onClose={this.handleSuccessClose}>
+                <Snackbar open={this.state.successOpen} autoHideDuration={2000} 
+                onClose={this.handleSuccessClose} anchorOrigin={{ vertical: 'top', horizontal: 'center' }}
+                >
                     <Alert onClose={this.handleSuccessClose} severity="success">
                         加载成功
                     </Alert>
                 </Snackbar>
-                <Snackbar open={this.state.errorOpen} autoHideDuration={6000} onClose={this.handleFailClose}>
+                <Snackbar open={this.state.errorOpen} autoHideDuration={2000} 
+                onClose={this.handleFailClose} anchorOrigin={{ vertical: 'top', horizontal: 'center' }}
+                >
                     <Alert onClose={this.handleSuccessClose} severity="error">
                         {"发生异常:\n" + ((this.state.errorMsg) ? this.state.errorMsg : "")}
                     </Alert>

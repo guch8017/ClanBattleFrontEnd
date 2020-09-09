@@ -7,9 +7,16 @@ import 'echarts/lib/component/markPoint';
 import ReactEcharts from 'echarts-for-react';
 import React from "react";
 import echartTheme from "./Theme"
+import { withStyles } from '@material-ui/core';
 
+const styles = theme => ({
+    chart: {
+        width: '700px',
+        height: '400px'
+    }
+});
 
-export default class DamageGraph extends React.Component {
+class DamageGraph extends React.Component {
     componentWillMount() {
         echarts.registerTheme('Imooc', echartTheme);
     }
@@ -74,10 +81,18 @@ export default class DamageGraph extends React.Component {
     }
 
     render() {
+        const chartStyle = {
+            width: this.props.width + 'px',
+            height: this.props.height + 'px',
+        }
+
         return (
             <div>
-                <ReactEcharts option={this.getOption()} theme="Imooc" style={{width: '704px', height: "400px"}}/>
+                {/* <ReactEcharts option={this.getOption()} theme="Imooc" style={{width: '704px', height: "400px"}}/> */}
+                <ReactEcharts option={this.getOption()} theme="Imooc" style={chartStyle} />
             </div>
         )
     }
 }
+
+export default withStyles(styles)(DamageGraph);

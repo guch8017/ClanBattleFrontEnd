@@ -1,12 +1,11 @@
 import React from "react";
 import {render} from "react-dom";
-import {BrowserRouter as Router, Link, Route} from "react-router-dom";
+import {BrowserRouter as Router, Route} from "react-router-dom";
 import AppHeader from "./Appbar"
 import ClanRankingTable from "./RankingTable";
 import ClanDetail from "./ClanDetail";
 import CssBaseline from "@material-ui/core/CssBaseline";
 import Axios from "axios";
-import {getClanBattleProgress} from "./Utils";
 import {searchAPI} from "./Constant";
 import {Snackbar} from "@material-ui/core";
 import {Alert} from "@material-ui/lab";
@@ -114,12 +113,16 @@ class Test extends React.Component {
                     />
                     <ClanRankingTable rankList={this.state.rankList} serverID={this.state.server}/>
                 </div>
-                <Snackbar open={this.state.successOpen} autoHideDuration={6000} onClose={this.handleSuccessClose}>
+                <Snackbar open={this.state.successOpen} autoHideDuration={2000} 
+                onClose={this.handleSuccessClose} anchorOrigin={{ vertical: 'top', horizontal: 'center' }}
+                >
                     <Alert onClose={this.handleSuccessClose} severity="success">
                         加载成功
                     </Alert>
                 </Snackbar>
-                <Snackbar open={this.state.errorOpen} autoHideDuration={6000} onClose={this.handleFailClose}>
+                <Snackbar open={this.state.errorOpen} autoHideDuration={2000} 
+                onClose={this.handleFailClose} anchorOrigin={{ vertical: 'top', horizontal: 'center' }}
+                >
                     <Alert onClose={this.handleSuccessClose} severity="error">
                         {"发生异常:\n" + ((this.state.errorMsg) ? this.state.errorMsg : "")}
                     </Alert>
