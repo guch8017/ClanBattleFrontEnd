@@ -2,7 +2,7 @@ import AppHeader from "./Appbar";
 import React from "react";
 import {withRouter} from "react-router"
 import DamageGraph from "./DamageGraph";
-import {Grid, Paper, Typography, withStyles, Snackbar, Table, TableCell, TableBody} from "@material-ui/core";
+import {Grid, Paper, Typography, withStyles, Snackbar, Table, TableCell, TableBody, TableHead} from "@material-ui/core";
 import TableRow from '@material-ui/core/TableRow';
 import TableContainer from '@material-ui/core/TableContainer';
 import MuiAlert from '@material-ui/lab/Alert';
@@ -15,6 +15,14 @@ import {getClanBattleProgress} from "./Utils";
 function Alert(props) {
     return <MuiAlert elevation={6} variant="filled" {...props} />;
 }
+
+
+const columns = [
+    {id: 'time', label: '数据记录时间', minWidth: 170},
+    {id: 'ranking', label: '排名', minWidth: 80},
+    {id: 'clanScore', label: '分数', minWidth: 170, format: (value) => value.toLocaleString()},
+];
+
 
 const styles = theme => ({
     container: {
@@ -44,7 +52,12 @@ const styles = theme => ({
         height: '100%',
         boxSizing: 'border-box',
         overflow: 'auto'
-      }
+    },
+    title: {
+        flex: '1 1 100%',
+        marginLeft: theme.spacing(2),
+        marginTop: theme.spacing(2)
+    },
 });
 
 class ClanDetail extends React.Component {
@@ -72,16 +85,18 @@ class ClanDetail extends React.Component {
             historyDmg: [],
             chartWidth: 0,
             chartHeight: 0,
+            dayChangeHistory: [],
+
         }
         this.handleFinishLoading = this.handleFinishLoading.bind(this);
         this.handleSuccessClose = this.handleSuccessClose.bind(this);
         this.handleFailClose = this.handleFailClose.bind(this);
 
-        window.addEventListener('resize', (ev) => {
+        window.addEventListener('resize', () => {
             // 更新表格大小
             this.setState({
-                chartWidth: (this.paperRef.current == null)? 0 : this.paperRef.current.clientWidth,
-                chartHeight: (this.paperRef.current == null)? 0 : this.paperRef.current.clientHeight,
+                chartWidth: (this.paperRef.current == null) ? 0 : this.paperRef.current.clientWidth,
+                chartHeight: (this.paperRef.current == null) ? 0 : this.paperRef.current.clientHeight,
             })
         })
     }
@@ -101,8 +116,8 @@ class ClanDetail extends React.Component {
     componentDidMount() {
         // 更新表格大小
         this.setState({
-            chartWidth: (this.paperRef.current == null)? 0 : this.paperRef.current.clientWidth,
-            chartHeight: (this.paperRef.current == null)? 0 : this.paperRef.current.clientHeight,
+            chartWidth: (this.paperRef.current == null) ? 0 : this.paperRef.current.clientWidth,
+            chartHeight: (this.paperRef.current == null) ? 0 : this.paperRef.current.clientHeight,
         })
 
         const _this = this;
@@ -137,12 +152,26 @@ class ClanDetail extends React.Component {
             const timeList = [];
             const damageList = [];
             const rankList = [];
+            const historyRanking = [];
+            let t = new Date(0);
             const progress = getClanBattleProgress(data['damage']);
             data['history'].forEach((val) => {
                 const time = val['t'] * 1000
+                const t1 = new Date(time);
+                if(t.getDate() !== t1.getDate() && t1.getHours() > 5){
+                    historyRanking.push({
+                        'time': t1.toLocaleString(),
+                        'ranking': val['r'],
+                        'clanScore': val['d'],
+                    });
+                    t = t1;
+                }
                 damageList.push([time, val['d']]);
                 rankList.push([time, val['r']]);
+
             })
+
+            console.log(historyRanking)
             _this.setState({
                 clanName: data['clanName'],
                 clanScore: data['damage'],
@@ -153,7 +182,8 @@ class ClanDetail extends React.Component {
                 historyTime: timeList,
                 historyDmg: damageList,
                 historyRank: rankList,
-                progress: `${progress[0]}周目 - ${progress[1]}王`
+                progress: `${progress[0]}周目 - ${progress[1]}王`,
+                dayChangeHistory: historyRanking,
             })
 
         }).catch((error) => {
@@ -202,16 +232,18 @@ class ClanDetail extends React.Component {
                                             <Table>
                                                 <TableBody>
                                                     {/* 格式化左侧数据 */}
-                                                    {clanDatas.map((value, index, array) => {
+                                                    {clanDatas.map((value) => {
                                                         return (
                                                             <TableRow>
                                                                 <TableCell>
-                                                                    <Typography variant="h6" color="textPrimary" component="p">
+                                                                    <Typography variant="h6" color="textPrimary"
+                                                                                component="p">
                                                                         {value[0]}
                                                                     </Typography>
                                                                 </TableCell>
                                                                 <TableCell>
-                                                                    <Typography variant="h6" color="textSecondary" component="p">
+                                                                    <Typography variant="h6" color="textSecondary"
+                                                                                component="p">
                                                                         {value[1]}
                                                                     </Typography>
                                                                 </TableCell>
@@ -232,28 +264,79 @@ class ClanDetail extends React.Component {
                                         ref={this.paperRef}
                                     >
                                         <div className={classes.htmlWrap}>
-                                            <DamageGraph  
-                                            d={this.state.historyDmg} 
-                                            r={this.state.historyRank}
-                                            width={Math.max(this.state.chartWidth, 600)}
-                                            height={400}
+                                            <DamageGraph
+                                                d={this.state.historyDmg}
+                                                r={this.state.historyRank}
+                                                width={Math.max(this.state.chartWidth, 600)}
+                                                height={400}
                                             />
                                         </div>
                                     </Paper>
                                 </Grid>
                             </Grid>
+                            <Grid item xs={12} md={8}>
+                                <Paper>
+                                    <Table
+                                        className={classes.table}
+                                        aria-labelledby="tableTitle"
+                                        size={'medium'}
+                                        aria-label="table"
+                                    >
+                                        <TableHead>
+                                            <Typography className={classes.title} variant="h5" id="tableTitle"
+                                                        component="div">
+                                                跨日排名
+                                            </Typography>
+                                            <TableRow>
+                                                {columns.map((column) => (
+                                                    <TableCell
+                                                        key={column.id}
+                                                        align={column.align}
+                                                        style={{minWidth: column.minWidth}}
+                                                    >
+                                                        <Typography variant='body1' color='textPrimary'
+                                                                    gutterBottom>
+                                                            {column.label}
+                                                        </Typography>
+                                                    </TableCell>
+                                                ))}
+                                            </TableRow>
+                                        </TableHead>
+                                        <TableBody>
+                                            {this.state.dayChangeHistory.map((row) => {
+                                                return (
+
+                                                    <TableRow hover role="checkbox" tabIndex={-1} key={row.ranking}>
+                                                        {columns.map((column) => {
+                                                            const value = row[column.id];
+                                                            return (
+                                                                <TableCell key={column.id} align={column.align}>
+                                                                    <Typography variant='body1' color='textPrimary' gutterBottom>
+                                                                        {column.format && typeof value === 'number' ? column.format(value) : value}
+                                                                    </Typography>
+                                                                </TableCell>
+                                                            );
+                                                        })}
+                                                    </TableRow>
+
+                                                );
+                                            })}
+                                        </TableBody>
+                                    </Table>
+                                </Paper>
+                            </Grid>
                         </Grid>
                     </div>
                 </div>
-                <Snackbar open={this.state.successOpen} autoHideDuration={2000} 
-                onClose={this.handleSuccessClose} anchorOrigin={{ vertical: 'top', horizontal: 'center' }}
+                <Snackbar open={this.state.successOpen} autoHideDuration={2000}
+                          onClose={this.handleSuccessClose} anchorOrigin={{vertical: 'top', horizontal: 'center'}}
                 >
                     <Alert onClose={this.handleSuccessClose} severity="success">
                         加载成功
                     </Alert>
                 </Snackbar>
-                <Snackbar open={this.state.errorOpen} autoHideDuration={2000} 
-                onClose={this.handleFailClose} anchorOrigin={{ vertical: 'top', horizontal: 'center' }}
+                <Snackbar open={this.state.errorOpen} autoHideDuration={2000}
+                          onClose={this.handleFailClose} anchorOrigin={{vertical: 'top', horizontal: 'center'}}
                 >
                     <Alert onClose={this.handleSuccessClose} severity="error">
                         {"发生异常:\n" + ((this.state.errorMsg) ? this.state.errorMsg : "")}
