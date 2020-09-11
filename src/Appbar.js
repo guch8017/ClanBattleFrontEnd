@@ -88,7 +88,7 @@ function AppHeader(props) {
 
     const handleClick = () => {
     }
-    const [searchKeyword, setKeyword] = useState(sessionStorage.getItem("searchKeyword"));
+    const [searchKeyword, setKeyword] = useState(sessionStorage.getItem("searchKeyword") || "");
     return (
         <div className={classes.root}>
             <AppBar position="static">
@@ -105,7 +105,7 @@ function AppHeader(props) {
                         </IconButton>
                     }
                     <Typography variant="h6" className={classes.title}>
-                        {'这里是项目名 - ' + serverNameList[props.serverID] + ((props.subName) ? (' - ' + props.subName) : '')}
+                        {'ルナ - ' + serverNameList[props.serverID] + ((props.subName) ? (' - ' + props.subName) : '')}
                     </Typography>
                     {(!props.subpage) && (
                         <>
