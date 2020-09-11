@@ -86,9 +86,9 @@ const searchMethodText = ['公会名', '排名', '会长ID'];
 function AppHeader(props) {
     const classes = useStyles();
 
-    const handleClick = (e) => {
+    const handleClick = () => {
     }
-    const [searchKeyword, setKeyword] = useState("");
+    const [searchKeyword, setKeyword] = useState(sessionStorage.getItem("searchKeyword"));
     return (
         <div className={classes.root}>
             <AppBar position="static">

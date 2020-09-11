@@ -18,7 +18,7 @@ export default class HomePage extends React.Component {
             successOpen: false,
             errorOpen: false,
             errorMsg: "",
-            loading: false
+            loading: false,
         }
         this.handleSearchModeChange = this.handleSearchModeChange.bind(this);
         this.handleSearch = this.handleSearch.bind(this);
@@ -28,12 +28,25 @@ export default class HomePage extends React.Component {
     }
 
     componentDidMount() {
+        const tempList = sessionStorage.getItem("rankList");
         const _this = this;
-        Axios.post(
-            searchAPI
-        ).then((rep) => {
-            _this.updateTable(_this, rep);
-        })
+        if(tempList){
+            try {
+                _this.setState({
+                    loading: false,
+                    rankList: JSON.parse(tempList),
+                })
+            }catch (e) {
+                sessionStorage.removeItem("rankList");
+            }
+        }
+        else {
+            Axios.post(
+                searchAPI
+            ).then((rep) => {
+                _this.updateTable(_this, rep);
+            })
+        }
     }
 
     updateTable(_this, rep){
@@ -54,6 +67,7 @@ export default class HomePage extends React.Component {
             })
             return
         }
+        sessionStorage.setItem("rankList", JSON.stringify(js['data']));
         _this.setState({
             loading: false,
             successOpen: true,
@@ -75,19 +89,20 @@ export default class HomePage extends React.Component {
 
     handleSearch(keyword) {
         const _this = this;
-        if(!keyword){
-            _this.setState({
-                errorOpen: true,
-                errorMsg: "查询关键字不能为空"
-            })
-            return
+        let data;
+        if(!keyword) {
+            data = null;
+        }
+        else {
+            data = {"clanName": keyword};
         }
         _this.setState({loading: true});
         Axios.post(
             searchAPI,
-            {"clanName": keyword}
+            data
         ).then(rep => {
-            _this.updateTable(_this, rep)
+            sessionStorage.setItem("searchKeyword", keyword);
+            _this.updateTable(_this, rep);
 
         }).catch(error =>
             _this.setState({
@@ -107,6 +122,7 @@ export default class HomePage extends React.Component {
                     <AppHeader serverID={this.state.server} searchMethod={this.state.searchMethod}
                                searchModeCallback={this.handleSearchModeChange}
                                doSearchCallback={this.handleSearch}
+                               searchKeyword={this.state.keyword}
                     />
                     <ClanRankingTable rankList={this.state.rankList} serverID={this.state.server}/>
                 </div>
