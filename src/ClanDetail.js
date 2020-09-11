@@ -54,13 +54,11 @@ const styles = theme => ({
         overflow: 'auto'
     },
     title: {
-        flex: '1 1 100%',
-        marginLeft: theme.spacing(2),
-        marginTop: theme.spacing(2)
+        marginLeft: theme.spacing(1),
+        marginBottom: theme.spacing(1),
+        textAlign: 'left'
     },
-    chartContainer: {
-
-    }
+    chartContainer: {}
 });
 
 class ClanDetail extends React.Component {
@@ -100,7 +98,7 @@ class ClanDetail extends React.Component {
         window.addEventListener('resize', this.handleResize);
     }
 
-    handleResize(){
+    handleResize() {
         // 更新表格大小
         this.setState({
             chartVisible: document.body.clientWidth > 625,
@@ -167,7 +165,7 @@ class ClanDetail extends React.Component {
             data['history'].forEach((val) => {
                 const time = val['t'] * 1000
                 const t1 = new Date(time);
-                if(t.getDate() !== t1.getDate() && t1.getHours() > 5){
+                if (t.getDate() !== t1.getDate() && t1.getHours() > 5) {
                     historyRanking.push({
                         'time': t1.toLocaleString(),
                         'ranking': val['r'],
@@ -270,75 +268,82 @@ class ClanDetail extends React.Component {
                                 </Grid>
                                 {/* 图表 */}
                                 {this.state.chartVisible &&
-                                    <Grid item xs={12} md={8}>
-                                        <Paper
-                                            marginLeft="20"
-                                            className={classes.paperLayout}
-                                            justify={"center"}
-                                            ref={this.paperRef}
-                                        >
-                                            <div className={classes.htmlWrap}>
-                                                <DamageGraph
-                                                    d={this.state.historyDmg}
-                                                    r={this.state.historyRank}
-                                                    width={Math.max(this.state.chartWidth, 600)}
-                                                    height={400}
-                                                />
-                                            </div>
-                                        </Paper>
-                                    </Grid>
+                                <Grid item xs={12} md={8}>
+                                    <Paper
+                                        marginLeft="20"
+                                        className={classes.paperLayout}
+                                        justify={"center"}
+                                        ref={this.paperRef}
+                                    >
+                                        <div className={classes.htmlWrap}>
+                                            <DamageGraph
+                                                d={this.state.historyDmg}
+                                                r={this.state.historyRank}
+                                                width={Math.max(this.state.chartWidth, 600)}
+                                                height={400}
+                                            />
+                                        </div>
+                                    </Paper>
+                                </Grid>
                                 }
                             </Grid>
-                            <Grid item xs={12} md={8}>
-                                <Paper>
-                                    <Table
-                                        className={classes.table}
-                                        aria-labelledby="tableTitle"
-                                        size={'medium'}
-                                        aria-label="table"
-                                    >
-                                        <TableHead>
-                                            <Typography className={classes.title} variant="h5" id="tableTitle"
-                                                        component="div">
+                            <Grid
+                                container
+                                spacing={1}
+                                className={classes.container}
+                            >
+                                <Grid item xs={12} md={8}>
+                                    <Paper className={classes.paperLayout}>
+                                        <Table
+                                            className={classes.table}
+                                            aria-labelledby="tableTitle"
+                                            size={'medium'}
+                                            aria-label="table"
+                                        >
+                                            <TableHead>
+                                                <Typography className={classes.title} variant="h5" id="tableTitle"
+                                                            component="div">
                                                 跨日排名
-                                            </Typography>
-                                            <TableRow>
-                                                {columns.map((column) => (
-                                                    <TableCell
-                                                        key={column.id}
-                                                        align={column.align}
-                                                        style={{minWidth: column.minWidth}}
-                                                    >
-                                                        <Typography variant='body1' color='textPrimary'
-                                                                    gutterBottom>
-                                                            {column.label}
-                                                        </Typography>
-                                                    </TableCell>
-                                                ))}
-                                            </TableRow>
-                                        </TableHead>
-                                        <TableBody>
-                                            {this.state.dayChangeHistory.map((row) => {
-                                                return (
+                                                </Typography>
+                                                <TableRow>
+                                                    {columns.map((column) => (
+                                                        <TableCell
+                                                            key={column.id}
+                                                            align={column.align}
+                                                            style={{minWidth: column.minWidth}}
+                                                        >
+                                                            <Typography variant='body1' color='textPrimary'
+                                                                        gutterBottom>
+                                                                {column.label}
+                                                            </Typography>
+                                                        </TableCell>
+                                                    ))}
+                                                </TableRow>
+                                            </TableHead>
+                                            <TableBody>
+                                                {this.state.dayChangeHistory.map((row) => {
+                                                    return (
 
-                                                    <TableRow hover role="checkbox" tabIndex={-1} key={row.id}>
-                                                        {columns.map((column) => {
-                                                            const value = row[column.id];
-                                                            return (
-                                                                <TableCell key={column.id} align={column.align}>
-                                                                    <Typography variant='body1' color='textPrimary' gutterBottom>
-                                                                        {column.format && typeof value === 'number' ? column.format(value) : value}
-                                                                    </Typography>
-                                                                </TableCell>
-                                                            );
-                                                        })}
-                                                    </TableRow>
+                                                        <TableRow hover role="checkbox" tabIndex={-1} key={row.id}>
+                                                            {columns.map((column) => {
+                                                                const value = row[column.id];
+                                                                return (
+                                                                    <TableCell key={column.id} align={column.align}>
+                                                                        <Typography variant='body1' color='textPrimary'
+                                                                                    gutterBottom>
+                                                                            {column.format && typeof value === 'number' ? column.format(value) : value}
+                                                                        </Typography>
+                                                                    </TableCell>
+                                                                );
+                                                            })}
+                                                        </TableRow>
 
-                                                );
-                                            })}
-                                        </TableBody>
-                                    </Table>
-                                </Paper>
+                                                    );
+                                                })}
+                                            </TableBody>
+                                        </Table>
+                                    </Paper>
+                                </Grid>
                             </Grid>
                         </Grid>
                     </div>
