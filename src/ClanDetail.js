@@ -58,6 +58,9 @@ const styles = theme => ({
         marginLeft: theme.spacing(2),
         marginTop: theme.spacing(2)
     },
+    chartContainer: {
+
+    }
 });
 
 class ClanDetail extends React.Component {
@@ -85,19 +88,24 @@ class ClanDetail extends React.Component {
             historyDmg: [],
             chartWidth: 0,
             chartHeight: 0,
+            chartVisible: true,
             dayChangeHistory: [],
 
         }
         this.handleFinishLoading = this.handleFinishLoading.bind(this);
         this.handleSuccessClose = this.handleSuccessClose.bind(this);
         this.handleFailClose = this.handleFailClose.bind(this);
+        this.handleResize = this.handleResize.bind(this);
 
-        window.addEventListener('resize', () => {
-            // 更新表格大小
-            this.setState({
-                chartWidth: (this.paperRef.current == null) ? 0 : this.paperRef.current.clientWidth,
-                chartHeight: (this.paperRef.current == null) ? 0 : this.paperRef.current.clientHeight,
-            })
+        window.addEventListener('resize', this.handleResize);
+    }
+
+    handleResize(){
+        // 更新表格大小
+        this.setState({
+            chartVisible: document.body.clientWidth > 625,
+            chartWidth: (this.paperRef.current == null) ? 0 : this.paperRef.current.clientWidth,
+            chartHeight: (this.paperRef.current == null) ? 0 : this.paperRef.current.clientHeight,
         })
     }
 
@@ -116,6 +124,7 @@ class ClanDetail extends React.Component {
     componentDidMount() {
         // 更新表格大小
         this.setState({
+            chartVisible: document.body.clientWidth > 625,
             chartWidth: (this.paperRef.current == null) ? 0 : this.paperRef.current.clientWidth,
             chartHeight: (this.paperRef.current == null) ? 0 : this.paperRef.current.clientHeight,
         })
@@ -196,6 +205,10 @@ class ClanDetail extends React.Component {
 
     }
 
+    componentWillUnmount() {
+        window.removeEventListener('resize', this.handleResize);
+    }
+
     render() {
         const {classes} = this.props;
 
@@ -256,23 +269,25 @@ class ClanDetail extends React.Component {
                                     </TableContainer>
                                 </Grid>
                                 {/* 图表 */}
-                                <Grid item xs={12} md={8}>
-                                    <Paper
-                                        marginLeft="20"
-                                        className={classes.paperLayout}
-                                        justify={"center"}
-                                        ref={this.paperRef}
-                                    >
-                                        <div className={classes.htmlWrap}>
-                                            <DamageGraph
-                                                d={this.state.historyDmg}
-                                                r={this.state.historyRank}
-                                                width={Math.max(this.state.chartWidth, 600)}
-                                                height={400}
-                                            />
-                                        </div>
-                                    </Paper>
-                                </Grid>
+                                {this.state.chartVisible &&
+                                    <Grid item xs={12} md={8}>
+                                        <Paper
+                                            marginLeft="20"
+                                            className={classes.paperLayout}
+                                            justify={"center"}
+                                            ref={this.paperRef}
+                                        >
+                                            <div className={classes.htmlWrap}>
+                                                <DamageGraph
+                                                    d={this.state.historyDmg}
+                                                    r={this.state.historyRank}
+                                                    width={Math.max(this.state.chartWidth, 600)}
+                                                    height={400}
+                                                />
+                                            </div>
+                                        </Paper>
+                                    </Grid>
+                                }
                             </Grid>
                             <Grid item xs={12} md={8}>
                                 <Paper>
@@ -306,7 +321,7 @@ class ClanDetail extends React.Component {
                                             {this.state.dayChangeHistory.map((row) => {
                                                 return (
 
-                                                    <TableRow hover role="checkbox" tabIndex={-1} key={row.ranking}>
+                                                    <TableRow hover role="checkbox" tabIndex={-1} key={row.id}>
                                                         {columns.map((column) => {
                                                             const value = row[column.id];
                                                             return (
