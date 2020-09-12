@@ -17,21 +17,28 @@ function Alert(props) {
 }
 
 
-const columns = [
-    {id: 'time', label: '数据记录时间', minWidth: 170},
-    {id: 'ranking', label: '排名', minWidth: 80},
-    {id: 'clanScore', label: '分数', minWidth: 170, format: (value) => value.toLocaleString()},
-];
+function showAll() {
+    return document.body.clientWidth > 650;
+}
+
+const columns = (showAll()) ?
+    [
+        {id: 'time', label: '数据记录时间', minWidth: 170},
+        {id: 'ranking', label: '排名', minWidth: 80},
+        {id: 'clanScore', label: '分数', minWidth: 170, format: (value) => value.toLocaleString()},
+    ] :
+    [
+        {id: 'time', label: '数据记录时间', minWidth: 170},
+        {id: 'ranking', label: '排名', minWidth: 50},
+    ];
 
 
 const styles = theme => ({
     container: {
         maxWidth: 1200,
         textAlign: "center",
-        marginTop: 40
-    },
-    mainContainer: {
-        flexGrow: 1,
+        marginTop: 20,
+        overflow: "hidden",
     },
     paperLayout: {
         padding: theme.spacing(2),
@@ -58,7 +65,10 @@ const styles = theme => ({
         marginBottom: theme.spacing(1),
         textAlign: 'left'
     },
-    chartContainer: {}
+    chartContainer: {},
+    disableFlow: {
+        overflow: "hidden",
+    }
 });
 
 class ClanDetail extends React.Component {
@@ -101,7 +111,7 @@ class ClanDetail extends React.Component {
     handleResize() {
         // 更新表格大小
         this.setState({
-            chartVisible: document.body.clientWidth > 625,
+            chartVisible: showAll(),
             chartWidth: (this.paperRef.current == null) ? 0 : this.paperRef.current.clientWidth,
             chartHeight: (this.paperRef.current == null) ? 0 : this.paperRef.current.clientHeight,
         })
@@ -162,15 +172,23 @@ class ClanDetail extends React.Component {
             const historyRanking = [];
             let t = new Date(0);
             const progress = getClanBattleProgress(data['damage']);
+            const showScore = showAll();
             data['history'].forEach((val) => {
                 const time = val['t'] * 1000
                 const t1 = new Date(time);
                 if (t.getDate() !== t1.getDate() && t1.getHours() > 5) {
-                    historyRanking.push({
-                        'time': t1.toLocaleString(),
-                        'ranking': val['r'],
-                        'clanScore': val['d'],
-                    });
+                    if (showScore) {
+                        historyRanking.push({
+                            'time': t1.toLocaleString(),
+                            'ranking': val['r'],
+                            'clanScore': val['d'],
+                        });
+                    } else {
+                        historyRanking.push({
+                            'time': t1.toLocaleString(),
+                            'ranking': val['r'],
+                        });
+                    }
                     t = t1;
                 }
                 damageList.push([time, val['d']]);
@@ -222,13 +240,12 @@ class ClanDetail extends React.Component {
         return (
             <React.Fragment>
                 <CssBaseline/>
-                <div className={classes.mainContainer}>
+                <div>
                     <AppHeader subpage={true} subName={this.state.clanName} serverID={this.serverID}/>
                     <div className={(this.state.loading) ? classes.loadingState : ""}>
-                        <Grid container justify="center">
+                        <Grid container justify="center" className={classes.disableFlow}>
                             <Grid
                                 container
-                                spacing={2}
                                 className={classes.container}
                                 alignItems="center"
                                 justify="center"
@@ -303,7 +320,7 @@ class ClanDetail extends React.Component {
                                             <TableHead>
                                                 <Typography className={classes.title} variant="h5" id="tableTitle"
                                                             component="div">
-                                                跨日排名
+                                                    跨日排名
                                                 </Typography>
                                                 <TableRow>
                                                     {columns.map((column) => (
